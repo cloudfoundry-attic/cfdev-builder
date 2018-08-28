@@ -41,6 +41,12 @@ services:
   - name: acpid
     image: linuxkit/acpid:168f871c7211c9d5e96002d53cb497b26e2d622b
 
+  - name: ntpd
+    image: linuxkit/openntpd:v0.6
+
+  - name: host-timesync-daemon
+    image: linuxkit/host-timesync-daemon:613dc55e67470ec375335a1958650c3711dc4aa6
+
   - name: vpnkit-forwarder
     image: linuxkit/vpnkit-forwarder:c7e61d9250de0b21455dc5c8bb885bd8faa31621
     net: host

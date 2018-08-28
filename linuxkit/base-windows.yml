@@ -44,7 +44,9 @@ onboot:
 services:
   - name: acpid
     image: linuxkit/acpid:168f871c7211c9d5e96002d53cb497b26e2d622b
-   # Format and mount the disk image in /var/lib
+
+  - name: ntpd
+    image: linuxkit/openntpd:v0.6
 
   - name: vpnkit-tap-vsockd
     image: pivotal/vpnkit-tap-vsockd:dev
