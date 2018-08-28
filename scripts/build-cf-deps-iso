@@ -48,6 +48,12 @@ services:
   handle: deploy-mysql
   script: bin/deploy-mysql
   deployment: cf-mysql
+
+versions:
+- name: cf
+  version: $(bosh int output/cache/deployment.yml --path /manifest_version)
+- name: cf-mysql
+  version: $(bosh int output/cache/mysql.yml --path /releases/name=cf-mysql/version)
 EOF
 
 echo "DELETE OLD FILES"
