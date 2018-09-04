@@ -26,7 +26,7 @@ cp "$imgscf_dir"/deploy-mysql "$output_dir"/bin/deploy-mysql
 stemcell_ops="---
 - type: replace
   path: /stemcells/alias=default/version
-  value: "$stemcell_version"
+  value: \"$stemcell_version\"
 "
 
 pushd "$cf_mysql_deployment"
