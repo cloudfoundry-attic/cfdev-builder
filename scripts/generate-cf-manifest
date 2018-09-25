@@ -38,6 +38,7 @@ pushd "$cf_deployment"
     -o "$ops_dir"/remove-smoke-test.yml \
     -o "$ops_dir"/low-tcp-ports.yml \
     -o "$ops_dir"/add-analytics-user.yml \
+    -o "$ops_dir"/remove-router-certs.yml \
     \
     -v cf_admin_password=admin \
     -v uaa_admin_client_secret=admin-client-secret \

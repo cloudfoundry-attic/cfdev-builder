@@ -1,0 +1,5 @@
+---
+- type: remove
+  path: /variables/name=router_ca
+- type: remove
+  path: /variables/name=router_ssl

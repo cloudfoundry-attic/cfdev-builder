@@ -39,6 +39,7 @@ permit_device_control() {
 }
 
 export DIRECTOR_DIR=/var/vcap/director
+export VARS_PATH=/var/vcap/cf/vars.yml
 export LOG_DIR=/var/vcap/logs
 mkdir -p "${DIRECTOR_DIR}"
 mkdir -p "${LOG_DIR}"
@@ -55,19 +56,19 @@ cp /var/vcap/cache/director.yml "${DIRECTOR_DIR}"
 
 bosh --tty create-env \
   "${DIRECTOR_DIR}/director.yml" \
-  --vars-store="${DIRECTOR_DIR}/creds.yml" \
+  --vars-store="${VARS_PATH}" \
   --state="${DIRECTOR_DIR}/state.json" \
 
-bosh int "${DIRECTOR_DIR}/creds.yml" \
+bosh int "${VARS_PATH}" \
   --path /director_ssl/ca > "${DIRECTOR_DIR}/ca.crt"
 
-bosh int "${DIRECTOR_DIR}/creds.yml" \
+bosh int "${VARS_PATH}" \
   --path /jumpbox_ssh/private_key > "${DIRECTOR_DIR}/jumpbox.key"
 
 cat <<EOF > "${DIRECTOR_DIR}/env"
 export BOSH_ENVIRONMENT="${BOSH_DIRECTOR_IP}"
 export BOSH_CLIENT=admin
-export BOSH_CLIENT_SECRET=$(bosh int "${DIRECTOR_DIR}/creds.yml" --path /admin_password)
+export BOSH_CLIENT_SECRET=$(bosh int "${VARS_PATH}" --path /admin_password)
 export BOSH_CA_CERT="$(cat ${DIRECTOR_DIR}/ca.crt)"
 EOF
 
