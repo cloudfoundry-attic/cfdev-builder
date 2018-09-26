@@ -24,7 +24,7 @@ cp ./images/cf/app-security-group.json output/cache
 ## Write metadata.yml
 cat > output/cache/metadata.yml <<EOF
 ---
-compatibility_version: "v1"
+compatibility_version: "v2"
 default_memory: 8192
 
 splash_message: "
