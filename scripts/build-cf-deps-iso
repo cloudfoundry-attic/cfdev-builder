@@ -45,6 +45,7 @@ splash_message: "
 
 services:
 - name: Mysql
+  flagname: mysql
   handle: deploy-mysql
   script: bin/deploy-mysql
   deployment: cf-mysql
