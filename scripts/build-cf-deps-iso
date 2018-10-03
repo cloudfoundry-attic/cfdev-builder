@@ -26,6 +26,7 @@ cat > output/cache/metadata.yml <<EOF
 ---
 compatibility_version: "v2"
 default_memory: 8192
+deployment_name: "cf"
 
 splash_message: "
   \t\n
