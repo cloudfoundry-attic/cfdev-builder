@@ -26,9 +26,7 @@ pushd "$cf_deployment"
   bosh int cf-deployment.yml \
     -o operations/use-compiled-releases.yml \
     \
-    -o operations/experimental/disable-consul.yml \
     -o operations/bosh-lite.yml \
-    -o operations/experimental/disable-consul-bosh-lite.yml \
     \
     -o "$ops_dir"/allow-local-docker-registry.yml \
     -o "$ops_dir"/garden-disable-app-armour.yml \
