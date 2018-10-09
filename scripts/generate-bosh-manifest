@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-root_dir="$(cd "$(dirname "$0")"/.. && pwd)"
-output_dir="$root_dir"/output/cache
+root_dir="$(cd "$(dirname "$0")"/../.. && pwd)"
+output_dir="${PWD}"
 imgscf_dir="$root_dir"/images/cf
 ops_dir="$root_dir"/images/cf/bosh-operations
+runc_ops_dir=/Users/pivotal/workspace/bosh-runc-cpi-release/operations
 while getopts "b:s:cu" arg; do
   case $arg in
     b) bosh_deployment="$(cd $OPTARG && pwd)"
@@ -27,16 +28,17 @@ set -x
 
 cp "$imgscf_dir"/deploy-bosh "$output_dir"/bin/deploy-bosh
 
+#      -o bosh-lite.yml \
+#      -o bosh-lite-runc.yml \
+#      -o bosh-lite-grootfs.yml \
+#      -o "$ops_dir"/remove-bosh-warden-cpi.yml
+#      -o warden/cpi.yml \
+#      -o warden/cpi-grootfs.yml \
+
 ops=( \
-      -o bosh-lite.yml \
-      -o bosh-lite-runc.yml \
-      -o bosh-lite-grootfs.yml \
-      -o "$ops_dir"/remove-bosh-warden-cpi.yml
-      -o warden/cpi.yml \
-      -o warden/cpi-grootfs.yml \
       -o jumpbox-user.yml \
 )
-if [[ ${include_uaa:-} ]]; then
+if [[ ${include_uaa:-} ]]; thensdf
   ops+=(-o uaa.yml)
 fi
 
@@ -51,21 +53,25 @@ stemcell_ops="---
     url: https://bosh.io/d/stemcells/bosh-google-kvm-ubuntu-trusty-go_agent?v=$stemcell_version
 "
 
+
+#    -o "$ops_dir"/use-warden-cpi-v39.yml \
+#    -o "$ops_dir"/replace-dns-with-vpnkit.yml \
+
 pushd "$bosh_deployment"
   bosh int bosh.yml \
     ${ops[@]} \
     \
     -o "$ops_dir"/disable-app-armor.yml \
     -o "$ops_dir"/remove-ports.yml \
-    -o "$ops_dir"/use-warden-cpi-v39.yml \
+    -o "$runc_ops_dir"/runc-cpi.yml \
     -o <(echo "$stemcell_ops") \
-    -o "$ops_dir"/replace-dns-with-vpnkit.yml \
     \
-    -v director_name="warden" \
-    -v internal_cidr=10.245.0.0/24 \
-    -v internal_gw=10.245.0.1 \
-    -v internal_ip=10.245.0.2 \
-    -v garden_host=10.0.0.10 \
+    -v director_name="director" \
+    -v internal_cidr=10.0.0.0/16 \
+    -v internal_gw=10.0.0.1 \
+    -v internal_ip=10.0.0.4 \
+    -v external_cpid_ip=127.0.0.1 \
+    -v internal_cpid_ip=192.168.65.3 \
     > "$output_dir"/director.yml
 
   bosh int runtime-configs/dns.yml \
