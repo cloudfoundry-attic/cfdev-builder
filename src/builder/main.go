@@ -59,8 +59,8 @@ func Download(url, path string) error {
 }
 
 func DownloadStemcell(version string) (string, error) {
-	url := fmt.Sprintf("https://s3.amazonaws.com/bosh-core-stemcells/warden/bosh-stemcell-%s-warden-boshlite-ubuntu-trusty-go_agent.tgz", version)
-	path := filepath.Join("output/cache", fmt.Sprintf("bosh-stemcell-%s-warden-boshlite-ubuntu-trusty-go_agent.tgz", version))
+	url := fmt.Sprintf("https://s3.amazonaws.com/bosh-core-stemcells/warden/bosh-stemcell-%s-warden-boshlite-ubuntu-xenial-go_agent.tgz", version)
+	path := filepath.Join("output/cache", fmt.Sprintf("bosh-stemcell-%s-warden-boshlite-ubuntu-xenial-go_agent.tgz", version))
 	newURL := fmt.Sprintf("file:///var/vcap/cache/%s", filepath.Base(path))
 	if Exists(path) {
 		fmt.Println("Skip Stemcell:", version)
@@ -96,7 +96,7 @@ func Stemcells(data Yaml) (string, error) {
 		for _, stemcell := range stemcells {
 			if stemcell, ok := stemcell.(Yaml); ok {
 				stemcellVersion = fmt.Sprintf("%v", stemcell["version"])
-				if stemcell["os"] == "ubuntu-trusty" && stemcellVersion != "<nil>" {
+				if stemcell["os"] == "ubuntu-xenial" && stemcellVersion != "<nil>" {
 					if _, err := DownloadStemcell(stemcellVersion); err != nil {
 						return "", err
 					}
@@ -145,7 +145,7 @@ func UploadStemcell(stemcellVersion string) error {
 	var stdout, stderr bytes.Buffer
 	cmd := exec.Command(
 		"bosh", "upload-stemcell",
-		fmt.Sprintf("https://s3.amazonaws.com/bosh-gce-light-stemcells/light-bosh-stemcell-%s-google-kvm-ubuntu-trusty-go_agent.tgz", stemcellVersion),
+		fmt.Sprintf("https://s3.amazonaws.com/bosh-gce-light-stemcells/light-bosh-stemcell-%s-google-kvm-ubuntu-xenial-go_agent.tgz", stemcellVersion),
 	)
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
@@ -165,7 +165,7 @@ func CompileRelease(stemcellVersion string, release map[interface{}]interface{},
 		"stemcells": []interface{}{
 			map[string]string{
 				"alias":   "default",
-				"os":      "ubuntu-trusty",
+				"os":      "ubuntu-xenial",
 				"version": stemcellVersion,
 			},
 		},
@@ -196,7 +196,7 @@ func CompileRelease(stemcellVersion string, release map[interface{}]interface{},
 	if txt, err := exec.Command(
 		"bosh", "-d", "cf", "export-release",
 		fmt.Sprintf("%v/%v", release["name"], release["version"]),
-		fmt.Sprintf("ubuntu-trusty/%s", stemcellVersion),
+		fmt.Sprintf("ubuntu-xenial/%s", stemcellVersion),
 		"--dir", tmpDir,
 	).CombinedOutput(); err != nil {
 		fmt.Println(string(txt))
