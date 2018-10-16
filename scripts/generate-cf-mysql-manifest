@@ -27,6 +27,9 @@ stemcell_ops="---
 - type: replace
   path: /stemcells/alias=default/version
   value: \"$stemcell_version\"
+- type: replace
+  path: /stemcells/alias=default/os
+  value: ubuntu-xenial
 "
 
 pushd "$cf_mysql_deployment"
