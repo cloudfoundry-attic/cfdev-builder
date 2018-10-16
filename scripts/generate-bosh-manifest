@@ -33,6 +33,7 @@ ops=( \
       -o bosh-lite-grootfs.yml \
       -o "$ops_dir"/remove-bosh-warden-cpi.yml
       -o warden/cpi.yml \
+      -o warden/cpi-grootfs.yml \
       -o jumpbox-user.yml \
 )
 if [[ ${include_uaa:-} ]]; then
