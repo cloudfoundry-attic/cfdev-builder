@@ -40,3 +40,7 @@
 
 /src/code.cloudfoundry.org/cfdev/cfdev
 /src/code.cloudfoundry.org/cfdev/cfdevd
+
+create-state-ci/output
+create-state-ci/deps
+create-state-ci/state

@@ -1,0 +1,249 @@
+cloud_provider:
+  cert: ((mbus_bootstrap_ssl))
+  mbus: https://mbus:((mbus_bootstrap_password))@10.0.0.4:6868
+  properties:
+    agent:
+      mbus: https://mbus:((mbus_bootstrap_password))@0.0.0.0:6868
+    blobstore:
+      path: /var/vcap/micro_bosh/data/cache
+      provider: local
+    ntp:
+    - time1.google.com
+    - time2.google.com
+    - time3.google.com
+    - time4.google.com
+    runc_cpi:
+      address: 127.0.0.1:9999
+      agent:
+        blobstore:
+          options:
+            blobstore_path: /var/vcap/micro_bosh/data/cache
+          provider: local
+        mbus: https://mbus:((mbus_bootstrap_password))@0.0.0.0:6868
+      network_type: tcp
+  template:
+    name: runc-cpi
+    release: bosh-runc-cpi
+disk_pools:
+- disk_size: 65536
+  name: disks
+instance_groups:
+- instances: 1
+  jobs:
+  - name: nats
+    release: bosh
+  - name: postgres-9.4
+    release: bosh
+  - name: blobstore
+    release: bosh
+  - name: director
+    release: bosh
+  - name: health_monitor
+    release: bosh
+  - name: user_add
+    properties:
+      users:
+      - name: jumpbox
+        public_key: ((jumpbox_ssh.public_key))
+    release: os-conf
+  - name: runc-cpi
+    release: bosh-runc-cpi-compiled
+  name: bosh
+  networks:
+  - name: default
+    static_ips:
+    - 10.0.0.4
+  persistent_disk_pool: disks
+  properties:
+    agent:
+      mbus: nats://nats:((nats_password))@10.0.0.4:4222
+    blobstore:
+      address: 10.0.0.4
+      agent:
+        password: ((blobstore_agent_password))
+        user: agent
+      director:
+        password: ((blobstore_director_password))
+        user: director
+      port: 25250
+      provider: dav
+    director:
+      address: 127.0.0.1
+      cpi_job: runc-cpi
+      db:
+        adapter: postgres
+        database: bosh
+        host: 127.0.0.1
+        listen_address: 127.0.0.1
+        password: ((postgres_password))
+        user: postgres
+      default_ssh_options:
+        gateway_user: jumpbox
+      enable_dedicated_status_worker: true
+      enable_nats_delivered_templates: true
+      enable_post_deploy: true
+      events:
+        record_events: true
+      flush_arp: true
+      generate_vm_passwords: true
+      local_dns:
+        enabled: true
+      name: director
+      ssl:
+        cert: ((director_ssl.certificate))
+        key: ((director_ssl.private_key))
+      user_management:
+        local:
+          users:
+          - name: admin
+            password: ((admin_password))
+          - name: hm
+            password: ((hm_password))
+        provider: local
+      workers: 4
+    hm:
+      director_account:
+        ca_cert: ((director_ssl.ca))
+        password: ((hm_password))
+        user: hm
+      resurrector_enabled: true
+    nats:
+      address: 10.0.0.4
+      password: ((nats_password))
+      tls:
+        ca: ((nats_server_tls.ca))
+        client_ca:
+          certificate: ((nats_ca.certificate))
+          private_key: ((nats_ca.private_key))
+        director:
+          certificate: ((nats_clients_director_tls.certificate))
+          private_key: ((nats_clients_director_tls.private_key))
+        health_monitor:
+          certificate: ((nats_clients_health_monitor_tls.certificate))
+          private_key: ((nats_clients_health_monitor_tls.private_key))
+        server:
+          certificate: ((nats_server_tls.certificate))
+          private_key: ((nats_server_tls.private_key))
+      user: nats
+    ntp:
+    - time1.google.com
+    - time2.google.com
+    - time3.google.com
+    - time4.google.com
+    postgres:
+      adapter: postgres
+      database: bosh
+      host: 127.0.0.1
+      listen_address: 127.0.0.1
+      password: ((postgres_password))
+      user: postgres
+    runc_cpi:
+      address: 192.168.65.3:9999
+      agent:
+        blobstore:
+          options:
+            endpoint: http://10.0.0.4:25250
+            password: ((blobstore_agent_password))
+            user: agent
+          provider: dav
+        mbus: nats://nats:((nats_password))@10.0.0.4:4222
+      network_type: tcp
+  resource_pool: vms
+name: bosh
+networks:
+- name: default
+  subnets:
+  - dns:
+    - 192.168.65.1
+    gateway: 10.0.0.1
+    range: 10.0.0.0/16
+    static:
+    - 10.0.0.4
+  type: manual
+releases:
+- name: bosh
+  sha1: a8f8f5138ef1e3b356bd5078a32694625e8846a5
+  url: https://s3.amazonaws.com/bosh-compiled-release-tarballs/bosh-265.2.0-ubuntu-trusty-3541.10-20180327-211954-148015419-20180327211957.tgz?versionId=cMRVRXQgYNbDeRdF52IyQ1yNBu7klA5j
+  version: 265.2.0
+- name: os-conf
+  sha1: 78d79f08ff5001cc2a24f572837c7a9c59a0e796
+  url: https://bosh.io/d/github.com/cloudfoundry/os-conf-release?v=18
+  version: 18
+- name: bosh-runc-cpi
+  url: file:///Users/pivotal/workspace/cfdev-builder/create-state-ci/deps/cpi.tgz
+- name: bosh-runc-cpi-compiled
+  url: file:///Users/pivotal/workspace/cfdev-builder/create-state-ci/deps/cpi-compiled.tgz
+resource_pools:
+- env:
+    bosh:
+      mbus:
+        cert: ((mbus_bootstrap_ssl))
+      password: '*'
+  name: vms
+  network: default
+  stemcell:
+    url: file:///Users/pivotal/workspace/cfdev-builder/create-state-ci/deps/stemcell.tgz
+variables:
+- name: admin_password
+  type: password
+- name: blobstore_director_password
+  type: password
+- name: blobstore_agent_password
+  type: password
+- name: hm_password
+  type: password
+- name: mbus_bootstrap_password
+  type: password
+- name: nats_password
+  type: password
+- name: postgres_password
+  type: password
+- name: default_ca
+  options:
+    common_name: ca
+    is_ca: true
+  type: certificate
+- name: mbus_bootstrap_ssl
+  options:
+    alternative_names:
+    - 10.0.0.4
+    ca: default_ca
+    common_name: 10.0.0.4
+  type: certificate
+- name: director_ssl
+  options:
+    alternative_names:
+    - 10.0.0.4
+    ca: default_ca
+    common_name: 10.0.0.4
+  type: certificate
+- name: nats_ca
+  options:
+    common_name: default.nats-ca.bosh-internal
+    is_ca: true
+  type: certificate
+- name: nats_server_tls
+  options:
+    alternative_names:
+    - 10.0.0.4
+    ca: nats_ca
+    common_name: default.nats.bosh-internal
+    extended_key_usage:
+    - server_auth
+  type: certificate
+- name: nats_clients_director_tls
+  options:
+    ca: nats_ca
+    common_name: default.director.bosh-internal
+    extended_key_usage:
+    - client_auth
+  type: certificate
+- name: nats_clients_health_monitor_tls
+  options:
+    ca: nats_ca
+    common_name: default.hm.bosh-internal
+    extended_key_usage:
+    - client_auth
+  type: certificate
+- name: jumpbox_ssh
+  type: ssh
