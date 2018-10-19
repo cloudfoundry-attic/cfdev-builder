@@ -1,0 +1,99 @@
+kernel:
+  image: linuxkit/kernel:4.14.70
+  cmdline: "console=ttyS0 page_poison=1 vsyscall=emulate no_timer_check"
+  # the "vsyscall=emulate" command line argument is imperative
+  # especially for deploying Cloud Foundry. Without it, errors
+  # with networking binaries manifest as segmentation faults
+init:
+- linuxkit/vpnkit-expose-port:v0.6
+- linuxkit/init:v0.6
+- linuxkit/runc:v0.6
+- linuxkit/containerd:v0.6
+- linuxkit/ca-certificates:v0.6
+- aemengo/runc-cpid:v0.4
+- linuxkit/getty:v0.6
+onboot:
+- name: format
+  image: linuxkit/format:v0.6
+- name: mount
+  image: linuxkit/mount:v0.6
+  command: ["/usr/bin/mountie", "/var/lib"]
+- name: swap
+  image: linuxkit/swap:v0.6
+  command: ["/swap.sh", "--path", "/var/lib/swap", "--size", "1024M"]
+- name: dhcpcd
+  image: linuxkit/dhcpcd:v0.6
+  command: ["/sbin/dhcpcd", "--nobackground", "-f", "/dhcpcd.conf", "-1"]
+- name: mount-vpnkit
+  image: alpine:3.8
+  binds:
+  - /var/:/host_var:rbind,rshared
+  capabilities:
+  - CAP_SYS_ADMIN
+  rootfsPropagation: shared
+  command: ["sh", "-c", "mkdir /host_var/vpnkit && mount -v -t 9p -o trans=virtio,dfltuid=1001,dfltgid=50,version=9p2000 port /host_var/vpnkit"]
+services:
+- name: acpid
+  image: linuxkit/acpid:v0.6
+- name: ntpd
+  image: linuxkit/openntpd:v0.6
+- name: host-timesync-daemon
+  image: linuxkit/host-timesync-daemon:613dc55e67470ec375335a1958650c3711dc4aa6
+- name: vpnkit-forwarder
+  image: linuxkit/vpnkit-forwarder:v0.6
+  binds:
+  - /var/vpnkit:/port
+  net: host
+  command: ["/vpnkit-forwarder"]
+- name: vpnkit-manager
+  image: aemengo/vpnkit-manager:v0.4
+  net: host
+  capabilities:
+  - all
+  binds:
+  - /usr/bin/vpnkit-expose-port:/usr/bin/vpnkit-expose-port # userland proxy
+  - /var/vpnkit:/port                                       # vpnkit control 9p mount
+  - /var/run:/var/run
+  command: ["/usr/bin/vpnkit-manager",
+
+            # bosh director ports
+            "--expose", "10.0.0.4:25555:10.0.0.4:25555",
+            "--expose", "10.0.0.4:6868:10.0.0.4:6868",
+            "--expose", "10.0.0.4:22:10.0.0.4:22",
+
+            # gorouter ports
+            "--expose", "10.0.0.5:80:10.0.0.5:80",
+            "--expose", "10.0.0.5:443:10.0.0.5:443",
+            "--expose", "10.0.0.5:2222:10.0.0.5:2222",
+
+            # gorouter tcp ports
+            "--expose", "10.0.0.5:1024:10.0.0.5:1024",
+            "--expose", "10.0.0.5:1025:10.0.0.5:1025",
+            "--expose", "10.0.0.5:1026:10.0.0.5:1026",
+            "--expose", "10.0.0.5:1027:10.0.0.5:1027",
+            "--expose", "10.0.0.5:1028:10.0.0.5:1028",
+            "--expose", "10.0.0.5:1029:10.0.0.5:1029",
+            "--expose", "10.0.0.5:1030:10.0.0.5:1030",
+            "--expose", "10.0.0.5:1031:10.0.0.5:1031",
+            "--expose", "10.0.0.5:1032:10.0.0.5:1032",
+            "--expose", "10.0.0.5:1033:10.0.0.5:1033",
+            "--expose", "10.0.0.5:1034:10.0.0.5:1034",
+            "--expose", "10.0.0.5:1035:10.0.0.5:1035",
+            "--expose", "10.0.0.5:1036:10.0.0.5:1036",
+            "--expose", "10.0.0.5:1037:10.0.0.5:1037",
+            "--expose", "10.0.0.5:1038:10.0.0.5:1038",
+            "--expose", "10.0.0.5:1039:10.0.0.5:1039",
+            "--expose", "10.0.0.5:1040:10.0.0.5:1040",
+            "--expose", "10.0.0.5:1041:10.0.0.5:1041",
+            "--expose", "10.0.0.5:1042:10.0.0.5:1042",
+            "--expose", "10.0.0.5:1043:10.0.0.5:1043",
+            "--expose", "10.0.0.5:1044:10.0.0.5:1044",
+            "--expose", "10.0.0.5:1045:10.0.0.5:1045",
+            "--expose", "10.0.0.5:1046:10.0.0.5:1046",
+            "--expose", "10.0.0.5:1047:10.0.0.5:1047",
+            "--expose", "10.0.0.5:1048:10.0.0.5:1048",
+            "--expose", "10.0.0.5:1049:10.0.0.5:1049"]
+
+trust:
+  org:
+  - linuxkit
