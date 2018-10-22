@@ -1,0 +1,5 @@
+---
+- type: replace
+  path: /addons/name=bosh-dns/include/stemcell/-
+  value:
+    os: ubuntu-xenial
