@@ -9,6 +9,9 @@
 - type: replace
   path: /instance_groups/name=database/jobs/name=mysql/properties/cf_mysql/mysql/max_connections?
   value: 100
+- type: replace
+  path: /instance_groups/name=database/jobs/name=mysql/properties/cf_mysql/mysql/innodb_buffer_pool_size_percent?
+  value: 2
 
 - type: replace
   path: /instance_groups/name=api/jobs/name=cloud_controller_ng/properties/cc/jobs?/local?/number_of_workers?
